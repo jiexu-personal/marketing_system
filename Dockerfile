@@ -1,5 +1,6 @@
-FROM php:8.2-apache
+FROM php:8.2-cli
 
+# 安装 SQLite 扩展和依赖
 RUN apt-get update && apt-get install -y \
     libsqlite3-dev \
     sqlite3 \
@@ -11,23 +12,22 @@ RUN apt-get update && apt-get install -y \
 
 RUN docker-php-ext-install pdo_sqlite pdo_mysql mbstring zip
 
+# 安装 Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# 设置工作目录
 WORKDIR /var/www/html
 COPY . .
 
+# 安装依赖
 RUN composer install --no-dev --optimize-autoloader
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
+# 给 storage 和 database 文件夹赋权（必须项）
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/database
 RUN chmod -R 775 /var/www/html/storage /var/www/html/database
 
-# 1. 删掉 Apache 默认自带的所有乱七八糟的虚拟主机配置
-RUN rm -f /etc/apache2/sites-enabled/* /etc/apache2/sites-available/*
-
-# 2. 把我们自己的配置文件复制过去并启用
-COPY apache-config.conf /etc/apache2/sites-available/000-default.conf
-RUN ln -s /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-enabled/
-
-RUN a2enmod rewrite
-
+# 暴露端口
 EXPOSE 80
+
+# 运行启动脚本
+CMD ["/var/www/html/start.sh"]
