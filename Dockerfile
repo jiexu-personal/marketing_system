@@ -6,9 +6,10 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libzip-dev \
     zip \
-    curl
+    curl \
+    libpq-dev
 
-RUN docker-php-ext-install pdo_sqlite mbstring zip
+RUN docker-php-ext-install pdo_sqlite pdo_mysql mbstring zip
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -19,7 +20,6 @@ RUN composer install --no-dev --optimize-autoloader
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# 让 Apache 指向 Laravel 的 public 目录
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -s 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -s 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
