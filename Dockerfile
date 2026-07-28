@@ -21,8 +21,12 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 RUN chmod -R 775 /var/www/html/storage /var/www/html/database
 
-# 复制我们写好的 Apache 配置文件并启用
+# 1. 删掉 Apache 默认自带的所有乱七八糟的虚拟主机配置
+RUN rm -f /etc/apache2/sites-enabled/* /etc/apache2/sites-available/*
+
+# 2. 把我们自己的配置文件复制过去并启用
 COPY apache-config.conf /etc/apache2/sites-available/000-default.conf
+RUN ln -s /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-enabled/
 
 RUN a2enmod rewrite
 
