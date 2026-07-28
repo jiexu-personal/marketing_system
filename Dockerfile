@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libzip-dev \
     zip \
-    uncurl
+    curl
 
 RUN docker-php-ext-install pdo_sqlite mbstring zip
 
